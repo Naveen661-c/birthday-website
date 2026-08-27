@@ -9,41 +9,81 @@
 ===================================================== */
 
 const BIRTHDAY_MUSIC = "music/2_birthday.mp3";
-const FEELING_MUSIC  = "music/3_feelings.mp3";
-const FINAL_MUSIC    = "music/4_final.mp3";
+
+const FEELING_MUSIC = "music/3_feelings.mp3";
+
+const FINAL_MUSIC = "music/4_final.mp3";
 
 
 /* =====================================================
    GLOBAL MUSIC PLAYER
 ===================================================== */
 
-let musicPlayer = new Audio();
+let musicPlayer = null;
 
 let currentMusic = null;
 
 
-/*
-    Volume: 70%
-*/
+/* =====================================================
+   INITIALIZE AUDIO PLAYER
+===================================================== */
 
-musicPlayer.volume = 0.7;
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        musicPlayer =
+            document.getElementById(
+                "musicPlayer"
+            );
 
 
-/*
-    Loop current music forever.
-*/
+        /*
+            No music on opening page.
+        */
 
-musicPlayer.loop = true;
+        currentMusic = null;
+
+    }
+);
 
 
 /* =====================================================
    PLAY MUSIC
 ===================================================== */
 
-function playMusic(file, musicName) {
+function playMusic(
+    file,
+    musicName
+) {
 
     /*
-        If the same music is already playing,
+        Make sure audio player exists.
+    */
+
+    if (!musicPlayer) {
+
+        musicPlayer =
+            document.getElementById(
+                "musicPlayer"
+            );
+
+    }
+
+
+    if (!musicPlayer) {
+
+        console.error(
+            "Music player not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+        If same music is already playing,
         don't restart it.
     */
 
@@ -67,34 +107,64 @@ function playMusic(file, musicName) {
 
 
     /*
-        Load new music.
+        Load local MP3.
     */
 
     musicPlayer.src = file;
+
+
+    /*
+        Keep music looping.
+    */
+
+    musicPlayer.loop = true;
+
+
+    /*
+        Volume = 70%.
+    */
+
+    musicPlayer.volume = 0.7;
+
+
+    /*
+        Remember current music.
+    */
 
     currentMusic = musicName;
 
 
     /*
-        Play music.
+        Start playback.
+
+        This is allowed because this function
+        is called after the user clicks a button.
     */
 
-    musicPlayer.play().catch(
-        function (error) {
+    const playPromise =
+        musicPlayer.play();
 
-            console.log(
-                "Music playback was blocked:",
-                error
-            );
 
-        }
-    );
+    if (playPromise !== undefined) {
+
+        playPromise.catch(
+            function (error) {
+
+                console.error(
+                    "Unable to play music:",
+                    error
+                );
+
+            }
+        );
+
+    }
 
 }
 
 
 /* =====================================================
-   PLAY BIRTHDAY MUSIC
+   PAGE 2 — BIRTHDAY MUSIC
 ===================================================== */
 
 function playBirthdayMusic() {
@@ -108,7 +178,7 @@ function playBirthdayMusic() {
 
 
 /* =====================================================
-   PLAY FEELING MUSIC
+   PAGE 3 — FEELING MUSIC
 ===================================================== */
 
 function playFeelingMusic() {
@@ -122,7 +192,7 @@ function playFeelingMusic() {
 
 
 /* =====================================================
-   PLAY FINAL MUSIC
+   PAGE 4 — FINAL MUSIC
 ===================================================== */
 
 function playFinalMusic() {
@@ -141,11 +211,22 @@ function playFinalMusic() {
 
 function stopAllMusic() {
 
+    if (!musicPlayer) {
+
+        return;
+
+    }
+
+
     musicPlayer.pause();
 
     musicPlayer.currentTime = 0;
 
-    musicPlayer.src = "";
+    musicPlayer.removeAttribute(
+        "src"
+    );
+
+    musicPlayer.load();
 
     currentMusic = null;
 
@@ -153,7 +234,7 @@ function stopAllMusic() {
 
 
 /* =====================================================
-   PAGE SWITCH FUNCTION
+   PAGE SWITCH
 ===================================================== */
 
 function switchPage(
@@ -226,7 +307,6 @@ function switchPage(
 
 /* =====================================================
    PAGE 1 → PAGE 2
-   OPEN BIRTHDAY GIFT
 ===================================================== */
 
 function openBirthday() {
@@ -238,7 +318,7 @@ function openBirthday() {
 
 
     /*
-        Start birthday music.
+        Start:
 
         music/2_birthday.mp3
     */
@@ -250,13 +330,12 @@ function openBirthday() {
 
 /* =====================================================
    PAGE 2 → PAGE 1
-   BACK TO OPENING
 ===================================================== */
 
 function goToOpening() {
 
     /*
-        Opening page has no music.
+        Stop music.
     */
 
     stopAllMusic();
@@ -272,7 +351,6 @@ function goToOpening() {
 
 /* =====================================================
    PAGE 2 → PAGE 3
-   SHOW FEELINGS
 ===================================================== */
 
 function showFeelings() {
@@ -284,7 +362,7 @@ function showFeelings() {
 
 
     /*
-        Start feelings music.
+        Start:
 
         music/3_feelings.mp3
     */
@@ -296,7 +374,6 @@ function showFeelings() {
 
 /* =====================================================
    PAGE 3 → PAGE 2
-   BACK TO BIRTHDAY
 ===================================================== */
 
 function goToBirthday() {
@@ -308,7 +385,7 @@ function goToBirthday() {
 
 
     /*
-        Return to birthday music.
+        Return to:
 
         music/2_birthday.mp3
     */
@@ -320,7 +397,6 @@ function goToBirthday() {
 
 /* =====================================================
    PAGE 3 → PAGE 4
-   FINAL PAGE
 ===================================================== */
 
 function showFinal() {
@@ -332,7 +408,7 @@ function showFinal() {
 
 
     /*
-        Start final music.
+        Start:
 
         music/4_final.mp3
     */
@@ -344,7 +420,6 @@ function showFinal() {
 
 /* =====================================================
    PAGE 4 → PAGE 3
-   BACK TO FEELINGS
 ===================================================== */
 
 function goToFeelings() {
@@ -356,7 +431,7 @@ function goToFeelings() {
 
 
     /*
-        Return to feelings music.
+        Return to:
 
         music/3_feelings.mp3
     */
@@ -373,12 +448,6 @@ function goToFeelings() {
 document.addEventListener(
     "DOMContentLoaded",
     function () {
-
-        /*
-            Website opens on Page 1.
-
-            No music should play automatically.
-        */
 
         currentMusic = null;
 
