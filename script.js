@@ -1,64 +1,55 @@
 /* =====================================================
    ROMANTIC BIRTHDAY WEBSITE
-   MUSIC CONTROLLER
+   LOCAL MUSIC CONTROLLER
 ===================================================== */
 
 
 /* =====================================================
-   YOUTUBE VIDEO IDs
+   LOCAL MUSIC FILES
 ===================================================== */
 
-/*
-    PAGE 2 — BIRTHDAY MUSIC
-    https://www.youtube.com/watch?v=4ef9WeON_8g
-*/
-
-const BIRTHDAY_VIDEO_ID = "4ef9WeON_8g";
-
-
-/*
-    PAGE 3 — FEELING MUSIC
-    https://www.youtube.com/watch?v=VCfrL292Gmk
-*/
-
-const FEELING_VIDEO_ID = "VCfrL292Gmk";
-
-
-/*
-    PAGE 4 — FINAL MUSIC
-    https://www.youtube.com/shorts/0UaRkKc_wk8
-*/
-
-const FINAL_VIDEO_ID = "0UaRkKc_wk8";
-
+const BIRTHDAY_MUSIC = "music/2_birthday.mp3";
+const FEELING_MUSIC  = "music/3_feelings.mp3";
+const FINAL_MUSIC    = "music/4_final.mp3";
 
 
 /* =====================================================
    GLOBAL MUSIC PLAYER
 ===================================================== */
 
-let musicPlayer = null;
-
-let youtubeReady = false;
+let musicPlayer = new Audio();
 
 let currentMusic = null;
 
 
+/*
+    Volume: 70%
+*/
+
+musicPlayer.volume = 0.7;
+
+
+/*
+    Loop current music forever.
+*/
+
+musicPlayer.loop = true;
+
 
 /* =====================================================
-   LOAD YOUTUBE IFRAME API
+   PLAY MUSIC
 ===================================================== */
 
-function loadYouTubeAPI() {
+function playMusic(file, musicName) {
 
     /*
-        Prevent loading the API twice.
+        If the same music is already playing,
+        don't restart it.
     */
 
     if (
-        document.getElementById(
-            "youtube-api-script"
-        )
+        currentMusic === musicName &&
+        !musicPlayer.paused
     ) {
 
         return;
@@ -66,132 +57,40 @@ function loadYouTubeAPI() {
     }
 
 
-    const script =
-        document.createElement("script");
+    /*
+        Stop current music.
+    */
 
+    musicPlayer.pause();
 
-    script.id =
-        "youtube-api-script";
-
-
-    script.src =
-        "https://www.youtube.com/iframe_api";
-
-
-    document.head.appendChild(script);
-
-}
-
-
-loadYouTubeAPI();
-
-
-
-/* =====================================================
-   YOUTUBE API READY
-===================================================== */
-
-function onYouTubeIframeAPIReady() {
-
-    youtubeReady = true;
+    musicPlayer.currentTime = 0;
 
 
     /*
-        ONLY ONE PLAYER.
-
-        This is important.
-
-        We do NOT create separate players for
-        birthday, feelings and final page.
+        Load new music.
     */
 
-    musicPlayer = new YT.Player(
-        "birthdayPlayer",
-        {
+    musicPlayer.src = file;
 
-            height: "1",
-
-            width: "1",
-
-            videoId: BIRTHDAY_VIDEO_ID,
-
-            playerVars: {
-
-                autoplay: 0,
-
-                controls: 0,
-
-                disablekb: 1,
-
-                fs: 0,
-
-                modestbranding: 1,
-
-                rel: 0,
-
-                playsinline: 1,
-
-                loop: 1,
-
-                playlist: BIRTHDAY_VIDEO_ID
-
-            },
+    currentMusic = musicName;
 
 
-            events: {
+    /*
+        Play music.
+    */
 
-                onReady:
-                    function () {
+    musicPlayer.play().catch(
+        function (error) {
 
-                        /*
-                            Set volume.
-                        */
-
-                        musicPlayer.setVolume(
-                            70
-                        );
-
-
-                        /*
-                            Website starts on
-                            opening page.
-
-                            Therefore DON'T play
-                            anything automatically here.
-                        */
-
-                    },
-
-
-                onStateChange:
-                    function (event) {
-
-                        /*
-                            Keep current music looping.
-
-                            YouTube's loop parameter is also
-                            enabled above, but this provides
-                            an additional safeguard.
-                        */
-
-                        if (
-                            event.data ===
-                            YT.PlayerState.ENDED
-                        ) {
-
-                            musicPlayer.playVideo();
-
-                        }
-
-                    }
-
-            }
+            console.log(
+                "Music playback was blocked:",
+                error
+            );
 
         }
     );
 
 }
-
 
 
 /* =====================================================
@@ -200,54 +99,12 @@ function onYouTubeIframeAPIReady() {
 
 function playBirthdayMusic() {
 
-    currentMusic =
-        "birthday";
-
-
-    /*
-        Make sure the player exists.
-    */
-
-    if (
-        !musicPlayer ||
-        typeof musicPlayer.loadVideoById !==
-            "function"
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-        Stop whatever is currently playing.
-
-        This guarantees that feeling/final music
-        cannot continue underneath birthday music.
-    */
-
-    musicPlayer.stopVideo();
-
-
-    /*
-        Load birthday music.
-    */
-
-    musicPlayer.loadVideoById(
-        BIRTHDAY_VIDEO_ID
-    );
-
-
-    /*
-        Set volume.
-    */
-
-    musicPlayer.setVolume(
-        70
+    playMusic(
+        BIRTHDAY_MUSIC,
+        "birthday"
     );
 
 }
-
 
 
 /* =====================================================
@@ -256,47 +113,12 @@ function playBirthdayMusic() {
 
 function playFeelingMusic() {
 
-    currentMusic =
-        "feelings";
-
-
-    if (
-        !musicPlayer ||
-        typeof musicPlayer.loadVideoById !==
-            "function"
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-        Stop current music first.
-    */
-
-    musicPlayer.stopVideo();
-
-
-    /*
-        Load feeling music.
-    */
-
-    musicPlayer.loadVideoById(
-        FEELING_VIDEO_ID
-    );
-
-
-    /*
-        Set volume.
-    */
-
-    musicPlayer.setVolume(
-        70
+    playMusic(
+        FEELING_MUSIC,
+        "feelings"
     );
 
 }
-
 
 
 /* =====================================================
@@ -305,50 +127,12 @@ function playFeelingMusic() {
 
 function playFinalMusic() {
 
-    currentMusic =
-        "final";
-
-
-    if (
-        !musicPlayer ||
-        typeof musicPlayer.loadVideoById !==
-            "function"
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-        Stop current music first.
-    */
-
-    musicPlayer.stopVideo();
-
-
-    /*
-        Load FINAL PAGE music.
-
-        YouTube Short ID:
-        0UaRkKc_wk8
-    */
-
-    musicPlayer.loadVideoById(
-        FINAL_VIDEO_ID
-    );
-
-
-    /*
-        Set volume.
-    */
-
-    musicPlayer.setVolume(
-        70
+    playMusic(
+        FINAL_MUSIC,
+        "final"
     );
 
 }
-
 
 
 /* =====================================================
@@ -357,22 +141,15 @@ function playFinalMusic() {
 
 function stopAllMusic() {
 
-    currentMusic =
-        null;
+    musicPlayer.pause();
 
+    musicPlayer.currentTime = 0;
 
-    if (
-        musicPlayer &&
-        typeof musicPlayer.stopVideo ===
-            "function"
-    ) {
+    musicPlayer.src = "";
 
-        musicPlayer.stopVideo();
-
-    }
+    currentMusic = null;
 
 }
-
 
 
 /* =====================================================
@@ -447,17 +224,12 @@ function switchPage(
 }
 
 
-
 /* =====================================================
    PAGE 1 → PAGE 2
    OPEN BIRTHDAY GIFT
 ===================================================== */
 
 function openBirthday() {
-
-    /*
-        Change page.
-    */
 
     switchPage(
         "opening",
@@ -466,15 +238,14 @@ function openBirthday() {
 
 
     /*
-        Start BIRTHDAY music.
+        Start birthday music.
 
-        4ef9WeON_8g
+        music/2_birthday.mp3
     */
 
     playBirthdayMusic();
 
 }
-
 
 
 /* =====================================================
@@ -491,17 +262,12 @@ function goToOpening() {
     stopAllMusic();
 
 
-    /*
-        Change page.
-    */
-
     switchPage(
         "birthday",
         "opening"
     );
 
 }
-
 
 
 /* =====================================================
@@ -511,10 +277,6 @@ function goToOpening() {
 
 function showFeelings() {
 
-    /*
-        Change page.
-    */
-
     switchPage(
         "birthday",
         "feelings"
@@ -522,15 +284,14 @@ function showFeelings() {
 
 
     /*
-        Start FEELING music.
+        Start feelings music.
 
-        VCfrL292Gmk
+        music/3_feelings.mp3
     */
 
     playFeelingMusic();
 
 }
-
 
 
 /* =====================================================
@@ -540,10 +301,6 @@ function showFeelings() {
 
 function goToBirthday() {
 
-    /*
-        Change page.
-    */
-
     switchPage(
         "feelings",
         "birthday"
@@ -551,18 +308,14 @@ function goToBirthday() {
 
 
     /*
-        IMPORTANT:
+        Return to birthday music.
 
-        Stop feeling music and replace it
-        with birthday music.
-
-        4ef9WeON_8g
+        music/2_birthday.mp3
     */
 
     playBirthdayMusic();
 
 }
-
 
 
 /* =====================================================
@@ -572,10 +325,6 @@ function goToBirthday() {
 
 function showFinal() {
 
-    /*
-        Change page.
-    */
-
     switchPage(
         "feelings",
         "final"
@@ -583,15 +332,14 @@ function showFinal() {
 
 
     /*
-        Start FINAL music.
+        Start final music.
 
-        0UaRkKc_wk8
+        music/4_final.mp3
     */
 
     playFinalMusic();
 
 }
-
 
 
 /* =====================================================
@@ -601,10 +349,6 @@ function showFinal() {
 
 function goToFeelings() {
 
-    /*
-        Change page.
-    */
-
     switchPage(
         "final",
         "feelings"
@@ -612,15 +356,14 @@ function goToFeelings() {
 
 
     /*
-        Return to FEELING music.
+        Return to feelings music.
 
-        VCfrL292Gmk
+        music/3_feelings.mp3
     */
 
     playFeelingMusic();
 
 }
-
 
 
 /* =====================================================
@@ -634,15 +377,13 @@ document.addEventListener(
         /*
             Website opens on Page 1.
 
-            No music should play here.
+            No music should play automatically.
         */
 
-        currentMusic =
-            null;
+        currentMusic = null;
 
     }
 );
-
 
 
 /* =====================================================
@@ -656,11 +397,8 @@ window.addEventListener(
         const pages = [
 
             "opening",
-
             "birthday",
-
             "feelings",
-
             "final"
 
         ];
